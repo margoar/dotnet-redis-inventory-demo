@@ -6,6 +6,8 @@ using RedisInventoryDemo.Application.Services;
 using RedisInventoryDemo.Infrastructure.Configuration;
 using RedisInventoryDemo.Infrastructure.Persistence;
 using StackExchange.Redis;
+using RedisInventoryDemo.Application.Abstractions.Caching;
+using RedisInventoryDemo.Infrastructure.Caching;
 
 
 
@@ -32,6 +34,7 @@ public static class DependencyInjection
 
 
         services.AddScoped<IInventoryRepository, InMemoryInventoryRepository>();
+        services.AddScoped<IInventoryCache, RedisInventoryCache>();
         services.AddScoped<IInventoryService, InventoryService>();
 
         return services;
