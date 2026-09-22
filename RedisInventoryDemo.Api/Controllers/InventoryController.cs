@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RedisInventoryDemo.Application.Contracts.Inventory;
 using RedisInventoryDemo.Application.Services;
 using RedisInventoryDemo.Domain.Entities;
 
@@ -24,6 +25,19 @@ public sealed class InventoryController : ControllerBase
 
         if (item is null)
             return NotFound();
+
+        return Ok(item);
+    }
+
+    [HttpPost("{id:int}/reserve")]
+    public async Task<ActionResult<InventoryItem>> Reserve(int id, ReserveInventoryRequest request)
+    {
+        var item = await _inventoryService.ReserveAsync(
+            id,
+            request);
+
+        if (item is null)
+            return Conflict();
 
         return Ok(item);
     }

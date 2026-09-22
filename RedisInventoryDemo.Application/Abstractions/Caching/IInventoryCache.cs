@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RedisInventoryDemo.Application.Contracts.Inventory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,9 +11,10 @@ namespace RedisInventoryDemo.Application.Abstractions.Caching
     {
         Task<int?> GetStockAsync(int inventoryId);
 
-        Task SetStockAsync(
-            int inventoryId,
-            int stock,
-            TimeSpan? expiration = null);
+        Task SetStockAsync( int inventoryId, int stock,  TimeSpan? expiration = null);
+
+        Task<ReserveStockResult> TryReserveStockAsync(int inventoryId,  int quantity);
+
+
     }
 }
