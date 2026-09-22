@@ -30,15 +30,29 @@ public sealed class InventoryController : ControllerBase
     }
 
     [HttpPost("{id:int}/reserve")]
-    public async Task<ActionResult<InventoryItem>> Reserve(int id, ReserveInventoryRequest request)
+    public async Task<ActionResult<InventoryItem>> Reserve(int id,  ReserveInventoryRequest request)
     {
-        var item = await _inventoryService.ReserveAsync(
+        var result = await _inventoryService.ReserveAsync(
             id,
             request);
 
-        if (item is null)
-            return Conflict();
+        return result.Status switch
+        {
+            ReserveStockStatus.InventoryNotFound =>
+                NotFound(),
 
-        return Ok(item);
+            ReserveStockStatus.InsufficientStock =>
+                Conflict(),
+
+            ReserveStockStatus.Reserved =>
+                Ok(new InventoryItem
+                {
+                    Id = id,
+                    Name = $"Producto {id}",
+                    Stock = result.RemainingStock!.Value
+                }),
+
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 }
