@@ -44,7 +44,7 @@ public sealed class InventoryService : IInventoryService
         return item;
     }
 
-    public async Task<InventoryItem?> ReserveAsync( int id,  ReserveInventoryRequest request)
+    public async Task<ReserveStockResult> ReserveAsync( int id,ReserveInventoryRequest request)
     {
         if (request.Quantity <= 0)
             throw new ArgumentException(
@@ -54,14 +54,6 @@ public sealed class InventoryService : IInventoryService
             id,
             request.Quantity);
 
-        if (result.Status != ReserveStockStatus.Reserved)
-            return null;
-
-        return new InventoryItem
-        {
-            Id = id,
-            Name = $"Producto {id}",
-            Stock = result.RemainingStock!.Value
-        };
+        return result;
     }
 }

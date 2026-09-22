@@ -6,5 +6,5 @@ namespace RedisInventoryDemo.Application.Services;
 public interface IInventoryService
 {
     Task<InventoryItem?> GetByIdAsync(int id);
-    Task<InventoryItem?> ReserveAsync(int id, ReserveInventoryRequest request);
+    Task<ReserveStockResult> ReserveAsync(int id,ReserveInventoryRequest request);
 }
