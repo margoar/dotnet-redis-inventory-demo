@@ -44,44 +44,24 @@ public sealed class InventoryService : IInventoryService
         return item;
     }
 
-    public async Task<InventoryItem?> ReserveAsync(int id,ReserveInventoryRequest request)
+    public async Task<InventoryItem?> ReserveAsync( int id,  ReserveInventoryRequest request)
     {
         if (request.Quantity <= 0)
             throw new ArgumentException(
                 "La cantidad debe ser mayor que cero.");
 
-        var cachedStock = await _inventoryCache.GetStockAsync(id);
-
-        if (!cachedStock.HasValue)
-        {
-            var item = await _inventoryRepository.GetByIdAsync(id);
-
-            if (item is null)
-                return null;
-
-            cachedStock = item.Stock;
-
-            await _inventoryCache.SetStockAsync(
-                id,
-                cachedStock.Value,
-                TimeSpan.FromMinutes(10));
-        }
-
-        if (cachedStock.Value < request.Quantity)
-            return null;
-
-        var newStock = cachedStock.Value - request.Quantity;
-
-        await _inventoryCache.SetStockAsync(
+        var result = await _inventoryCache.TryReserveStockAsync(
             id,
-            newStock,
-            TimeSpan.FromMinutes(10));
+            request.Quantity);
+
+        if (result.Status != ReserveStockStatus.Reserved)
+            return null;
 
         return new InventoryItem
         {
             Id = id,
             Name = $"Producto {id}",
-            Stock = newStock
+            Stock = result.RemainingStock!.Value
         };
     }
 }
