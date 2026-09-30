@@ -51,19 +51,15 @@ public sealed class RedisInventoryCache : IInventoryCache
         var database = _connectionMultiplexer.GetDatabase();
 
         var key = $"inventory:{inventoryId}";
+
         if (expiration.HasValue)
         {
-            await database.StringSetAsync(
-                key,
-                stock,
-                new Expiration(expiration.Value));
+            await database.StringSetAsync(key, stock, new Expiration(expiration.Value));
 
             return;
         }
 
-        await database.StringSetAsync(
-            key,
-            stock);
+        await database.StringSetAsync(key,stock);
     }
     public async Task<ReserveStockResult> TryReserveStockAsync(int inventoryId, int quantity)
     {

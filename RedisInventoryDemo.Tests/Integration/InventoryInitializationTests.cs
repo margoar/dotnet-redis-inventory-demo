@@ -11,8 +11,7 @@ public class InventoryInitializationTests
     public async Task ReserveAsync_ShouldInitializeStockWhenRedisKeyDoesNotExist()
     {
         // Arrange
-        var connection = await ConnectionMultiplexer.ConnectAsync(
-            "localhost:6380");
+        var connection = await ConnectionMultiplexer.ConnectAsync("localhost:6380");
 
         var database = connection.GetDatabase();
 
@@ -28,25 +27,15 @@ public class InventoryInitializationTests
             cache);
 
         // Act
-        var result = await service.ReserveAsync(
-            inventoryId,
-            new Application.Contracts.Inventory.ReserveInventoryRequest(3));
+        var result = await service.ReserveAsync(inventoryId, new Application.Contracts.Inventory.ReserveInventoryRequest(3));
 
         // Assert
-        Assert.Equal(
-            Application.Contracts.Inventory.ReserveStockStatus.Reserved,
-            result.Status);
+        Assert.Equal(Application.Contracts.Inventory.ReserveStockStatus.Reserved, result.Status);
+        Assert.Equal(7, result.RemainingStock);
 
-        Assert.Equal(
-            7,
-            result.RemainingStock);
+        var stockInRedis = await database.StringGetAsync($"inventory:{inventoryId}");
 
-        var stockInRedis = await database.StringGetAsync(
-            $"inventory:{inventoryId}");
-
-        Assert.Equal(
-            "7",
-            stockInRedis);
+        Assert.Equal("7",  stockInRedis);
 
 
         await database.KeyDeleteAsync($"inventory:{inventoryId}");
