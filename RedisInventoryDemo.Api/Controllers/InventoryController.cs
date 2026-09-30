@@ -30,29 +30,29 @@ public sealed class InventoryController : ControllerBase
     }
 
     [HttpPost("{id:int}/reserve")]
-    public async Task<ActionResult<InventoryItem>> Reserve(int id,  ReserveInventoryRequest request)
+    public async Task<ActionResult<InventoryItem>> Reserve(int id, ReserveInventoryRequest request)
     {
-        var result = await _inventoryService.ReserveAsync(
-            id,
-            request);
+        if (request.Quantity <= 0)
+        {
+            return BadRequest("La cantidad debe ser mayor que cero.");
+        }
+
+        var result = await _inventoryService.ReserveAsync( id, request);
 
         return result.Status switch
         {
-            ReserveStockStatus.InventoryNotFound =>
-                NotFound(),
-
-            ReserveStockStatus.InsufficientStock =>
-                Conflict(),
-
+            ReserveStockStatus.InvalidQuantity => BadRequest("La cantidad debe ser mayor que cero."),
+            ReserveStockStatus.InventoryNotFound => NotFound(),
+            ReserveStockStatus.InsufficientStock => Conflict(),
             ReserveStockStatus.Reserved =>
                 Ok(new InventoryItem
                 {
                     Id = id,
                     Name = $"Producto {id}",
                     Stock = result.RemainingStock!.Value
-                }),
-
+                }), 
             _ => StatusCode(StatusCodes.Status500InternalServerError)
+ 
         };
     }
 }
