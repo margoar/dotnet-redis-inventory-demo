@@ -2,6 +2,7 @@
 
 namespace RedisInventoryDemo.Tests.Integration;
 
+[Collection("Redis integration")]
 public class RedisTtlTests
 {
     [Fact]

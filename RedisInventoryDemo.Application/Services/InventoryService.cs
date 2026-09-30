@@ -9,12 +9,14 @@ public sealed class InventoryService : IInventoryService
 {
     private readonly IInventoryRepository _inventoryRepository;
     private readonly IInventoryCache _inventoryCache;
+    private readonly IInventoryStockStore _inventoryStockStore;
 
 
-    public InventoryService(IInventoryRepository inventoryRepository , IInventoryCache inventoryCache)
+    public InventoryService(IInventoryRepository inventoryRepository , IInventoryCache inventoryCache, IInventoryStockStore inventoryStockStore)
     {
         _inventoryRepository = inventoryRepository;
         _inventoryCache = inventoryCache;
+        _inventoryStockStore = inventoryStockStore;
     }
 
     public async Task<InventoryItem?> GetByIdAsync(int id)
@@ -63,7 +65,7 @@ public sealed class InventoryService : IInventoryService
             await _inventoryCache.SetStockAsync(id, item.Stock, TimeSpan.FromMinutes(10));
         }
 
-        var result = await _inventoryCache.TryReserveStockAsync(id, request.Quantity);
+        var result = await _inventoryStockStore.TryReserveStockAsync(id, request.Quantity);
 
         return result;
     }

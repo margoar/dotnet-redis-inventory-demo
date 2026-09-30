@@ -3,6 +3,7 @@ using StackExchange.Redis;
 
 namespace RedisInventoryDemo.Tests.Integration;
 
+[Collection("Redis integration")]
 public class RedisDistributedLockTests
 {
     [Fact]

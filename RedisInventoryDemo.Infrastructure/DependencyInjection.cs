@@ -1,15 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using RedisInventoryDemo.Application.Abstractions.Caching;
+using RedisInventoryDemo.Application.Abstractions.Concurrency;
 using RedisInventoryDemo.Application.Abstractions.Persistence;
 using RedisInventoryDemo.Application.Services;
+using RedisInventoryDemo.Infrastructure.Caching;
+using RedisInventoryDemo.Infrastructure.Concurrency;
 using RedisInventoryDemo.Infrastructure.Configuration;
+using RedisInventoryDemo.Infrastructure.Inventory;
 using RedisInventoryDemo.Infrastructure.Persistence;
 using StackExchange.Redis;
-using RedisInventoryDemo.Application.Abstractions.Caching;
-using RedisInventoryDemo.Infrastructure.Caching;
-using RedisInventoryDemo.Application.Abstractions.Concurrency;
-using RedisInventoryDemo.Infrastructure.Concurrency;
 
 
 
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IInventoryCache, RedisInventoryCache>();
         services.AddScoped<IInventoryService, InventoryService>();
         services.AddScoped<IDistributedLock, RedisDistributedLock>();
+        services.AddScoped<IInventoryStockStore, RedisInventoryStockStore>();
 
         return services;
     }
