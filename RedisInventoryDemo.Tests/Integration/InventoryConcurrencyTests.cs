@@ -9,14 +9,11 @@ public class InventoryConcurrencyTests
     public async Task ConcurrentReservations_ShouldNeverOverReserveStock()
     {
         // Arrange
-        var connection = await ConnectionMultiplexer.ConnectAsync(
-            "localhost:6380");
+        var connection = await ConnectionMultiplexer.ConnectAsync("localhost:6380");
 
         var database = connection.GetDatabase();
 
-        await database.StringSetAsync(
-            "inventory:1",
-            10);
+        await database.StringSetAsync("inventory:1",   10);
 
         var cache = new RedisInventoryCache(connection);
 
@@ -39,13 +36,12 @@ public class InventoryConcurrencyTests
                 x.Status ==
                 RedisInventoryDemo.Application.Contracts.Inventory.ReserveStockStatus.InsufficientStock);
 
-        var finalStock = await database.StringGetAsync(
-            "inventory:1");
+        var finalStock = await database.StringGetAsync("inventory:1");
 
         Assert.Equal(10, successfulReservations);
         Assert.Equal(10, rejectedReservations);
         Assert.Equal("0", finalStock);
-
+        await database.KeyDeleteAsync("inventory:1");
         await connection.CloseAsync();
     }
 }
