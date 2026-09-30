@@ -8,6 +8,8 @@ using RedisInventoryDemo.Infrastructure.Persistence;
 using StackExchange.Redis;
 using RedisInventoryDemo.Application.Abstractions.Caching;
 using RedisInventoryDemo.Infrastructure.Caching;
+using RedisInventoryDemo.Application.Abstractions.Concurrency;
+using RedisInventoryDemo.Infrastructure.Concurrency;
 
 
 
@@ -36,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IInventoryRepository, InMemoryInventoryRepository>();
         services.AddScoped<IInventoryCache, RedisInventoryCache>();
         services.AddScoped<IInventoryService, InventoryService>();
+        services.AddScoped<IDistributedLock, RedisDistributedLock>();
 
         return services;
     }
