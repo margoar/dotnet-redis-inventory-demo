@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using RedisInventoryDemo.Application.Contracts.Inventory;
 using RedisInventoryDemo.Application.Services;
 using RedisInventoryDemo.Domain.Entities;
@@ -17,20 +18,20 @@ public sealed class InventoryController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(InventoryItem), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(InventoryItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<InventoryItem>> GetById(int id)
+    public async Task<ActionResult<InventoryItemResponse>> GetById(int id)
     {
         var item = await _inventoryService.GetByIdAsync(id);
 
         if (item is null)
             return NotFound();
 
-        return Ok(item);
+        return Ok(new InventoryItemResponse(item.Id, item.Name, item.Stock));
     }
 
     [HttpPost("{id:int}/reserve")]
-    public async Task<ActionResult<InventoryItem>> Reserve(int id, ReserveInventoryRequest request)
+    public async Task<ActionResult<InventoryItemResponse>> Reserve(int id, ReserveInventoryRequest request)
     {
         if (request.Quantity <= 0)
         {
@@ -44,14 +45,10 @@ public sealed class InventoryController : ControllerBase
             ReserveStockStatus.InvalidQuantity => BadRequest("La cantidad debe ser mayor que cero."),
             ReserveStockStatus.InventoryNotFound => NotFound(),
             ReserveStockStatus.InsufficientStock => Conflict(),
-            ReserveStockStatus.Reserved =>
-                Ok(new InventoryItem
-                {
-                    Id = id,
-                    Name = $"Producto {id}",
-                    Stock = result.RemainingStock!.Value
-                }), 
-            _ => StatusCode(StatusCodes.Status500InternalServerError)
+            ReserveStockStatus.Reserved => Ok(new InventoryItemResponse(id,$"Producto {id}",result.RemainingStock!.Value)),
+
+
+        _ => StatusCode(StatusCodes.Status500InternalServerError)
  
         };
     }
