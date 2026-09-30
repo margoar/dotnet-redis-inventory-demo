@@ -1,7 +1,9 @@
 ﻿using RedisInventoryDemo.Application.Services;
 using RedisInventoryDemo.Infrastructure.Caching;
+using RedisInventoryDemo.Infrastructure.Inventory;
 using RedisInventoryDemo.Infrastructure.Persistence;
 using StackExchange.Redis;
+using static RedisInventoryDemo.Tests.Services.InventoryServiceTests;
 
 namespace RedisInventoryDemo.Tests.Integration;
 
@@ -21,10 +23,8 @@ public class InventoryInitializationTests
 
         var cache = new RedisInventoryCache(connection);
         var repository = new InMemoryInventoryRepository();
-
-        var service = new InventoryService(
-            repository,
-            cache);
+        var stockStore = new RedisInventoryStockStore(connection);
+        var service = new InventoryService(repository, cache, stockStore);
 
         // Act
         var result = await service.ReserveAsync(inventoryId, new Application.Contracts.Inventory.ReserveInventoryRequest(3));
