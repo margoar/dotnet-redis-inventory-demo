@@ -34,6 +34,17 @@ public class InventoryServiceTests
 
     internal sealed class FakeInventoryCache : IInventoryCache
     {
+        private readonly ReserveStockResult _reserveResult;
+
+        public FakeInventoryCache(
+            ReserveStockResult? reserveResult = null)
+        {
+            _reserveResult = reserveResult
+                ?? new ReserveStockResult(
+                    ReserveStockStatus.Reserved,
+                    7);
+        }
+
         public Task<int?> GetStockAsync(int inventoryId)
             => Task.FromResult<int?>(10);
 
@@ -46,12 +57,7 @@ public class InventoryServiceTests
         public Task<ReserveStockResult> TryReserveStockAsync(
             int inventoryId,
             int quantity)
-        {
-            return Task.FromResult(
-                new ReserveStockResult(
-                    ReserveStockStatus.Reserved,
-                    10 - quantity));
-        }
+            => Task.FromResult(_reserveResult);
     }
 
     internal sealed class FakeInventoryRepository : IInventoryRepository
@@ -66,5 +72,53 @@ public class InventoryServiceTests
                     Stock = 10
                 });
         }
+    }
+
+
+    [Fact]
+    public async Task ReserveAsync_ShouldReturnInsufficientStock()
+    {
+        var cache = new FakeInventoryCache(
+            new ReserveStockResult(
+                ReserveStockStatus.InsufficientStock,
+                null));
+
+        var service = new InventoryService(
+            new FakeInventoryRepository(),
+            cache);
+
+        var result = await service.ReserveAsync(
+            1,
+            new ReserveInventoryRequest(11));
+
+        Assert.Equal(
+            ReserveStockStatus.InsufficientStock,
+            result.Status);
+
+        Assert.Null(result.RemainingStock);
+    }
+
+
+    [Fact]
+    public async Task ReserveAsync_ShouldReturnInventoryNotFound()
+    {
+        var cache = new FakeInventoryCache(
+            new ReserveStockResult(
+                ReserveStockStatus.InventoryNotFound,
+                null));
+
+        var service = new InventoryService(
+            new FakeInventoryRepository(),
+            cache);
+
+        var result = await service.ReserveAsync(
+            999,
+            new ReserveInventoryRequest(1));
+
+        Assert.Equal(
+            ReserveStockStatus.InventoryNotFound,
+            result.Status);
+
+        Assert.Null(result.RemainingStock);
     }
 }
