@@ -43,8 +43,11 @@ public sealed class InventoryService : IInventoryService
 
     public async Task<ReserveStockResult> ReserveAsync(int id, ReserveInventoryRequest request)
     {
+
         if (request.Quantity <= 0)
-            throw new ArgumentException("La cantidad debe ser mayor que cero.");
+        {
+            return new ReserveStockResult(ReserveStockStatus.InvalidQuantity, null);
+        }
 
         var cachedStock = await _inventoryCache.GetStockAsync(id);
 
